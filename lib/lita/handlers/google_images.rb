@@ -5,11 +5,11 @@ module Lita
     class GoogleImages < Handler
       URL = "https://ajax.googleapis.com/ajax/services/search/images"
 
-      route(/(?:image|img)(?:\s+me)? (.+)/, :fetch, command: true, help: {
+      route(/(?:image|img)(?:\s+me)? (.+)/, :fetch, command: false, help: {
         ":image QUERY" => "Displays a random image from Google Images matching the query."
       })
 
-      route(/(?:imagebomb|imgbomb)(?:\s+me)? (.+)/, :fetch_many, command: true, help: {
+      route(/(?:imagebomb|imgbomb)(?:\s+me)? (.+)/, :fetch_many, command: false, help: {
         ":imagebomb QUERY" => "Displays 6 random images from Google Images matching the query."
       })
 
