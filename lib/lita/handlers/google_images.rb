@@ -6,7 +6,11 @@ module Lita
       URL = "https://ajax.googleapis.com/ajax/services/search/images"
 
       route(/(?:image|img)(?:\s+me)? (.+)/, :fetch, command: true, help: {
-        "image QUERY" => "Displays a random image from Google Images matching the query."
+        ":image QUERY" => "Displays a random image from Google Images matching the query."
+      })
+
+      route(/(?:imagebomb|imgbomb)(?:\s+me)? (.+)/, :fetch_many, command: true, help: {
+        ":imagebomb QUERY" => "Displays 6 random images from Google Images matching the query."
       })
 
       def self.default_config(handler_config)
@@ -30,6 +34,36 @@ module Lita
           choice = data["responseData"]["results"].sample
           if choice
             response.reply "#{choice["unescapedUrl"]}#.png"
+          else
+            response.reply %{No images found for "#{query}".}
+          end
+        else
+          reason = data["responseDetails"] || "unknown error"
+          Lita.logger.warn(
+            "Couldn't get image from Google: #{reason}"
+          )
+        end
+      end
+
+      def fetch_many(response)
+        query = response.matches[0][0]
+
+        http_response = http.get(
+          URL,
+          v: "1.0",
+          q: query,
+          safe: safe_value,
+          rsz: 8
+        )
+
+        data = MultiJson.load(http_response.body)
+
+        if data["responseStatus"] == 200
+          images = data["responseData"]["results"].to_a.shuffle[0..5]
+          if images
+            images.each do |image|
+              response.reply "#{image["unescapedUrl"]}#.png"
+            end
           else
             response.reply %{No images found for "#{query}".}
           end
